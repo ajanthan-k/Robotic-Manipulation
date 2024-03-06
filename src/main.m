@@ -1,0 +1,240 @@
+% Read the position of the dynamixel horn with the torque off
+% The code executes for a given amount of time then terminates
+
+
+clc;
+clear all;
+
+lib_name = '';
+
+if strcmp(computer, 'PCWIN')
+  lib_name = 'dxl_x86_c';
+elseif strcmp(computer, 'PCWIN64')
+  lib_name = 'dxl_x64_c';
+end
+
+% Load Libraries
+if ~libisloaded(lib_name)
+    [notfound, warnings] = loadlibrary(lib_name, 'dynamixel_sdk.h', 'addheader', 'port_handler.h', 'addheader', 'packet_handler.h');
+end
+
+%% ---- Control Table Addresses ---- %%
+
+ADDR_PRO_DRIVE_MODE          = 10;
+ADDR_PRO_OPERATING_MODE      = 11;
+ADDR_PRO_HOMING_0FFSET       = 20;
+
+ADDR_PRO_TORQUE_ENABLE       = 64;         
+ADDR_PRO_GOAL_POSITION       = 116; 
+ADDR_PRO_PRESENT_POSITION    = 132; 
+ADDR_POS_P_GAIN              = 84;
+ADDR_POS_I_GAIN              = 82;
+ADDR_POS_D_GAIN              = 80;
+
+ADDR_MAX_POS = 48;
+ADDR_MIN_POS = 52;
+
+% ---- Other Settings ---- %
+
+% Protocol version
+PROTOCOL_VERSION            = 2.0;          % See which protocol version is used in the Dynamixel
+
+% Default setting
+DXL_IDS                     = [11, 12, 13, 14, 15];
+BAUDRATE                    = 115200;
+DEVICENAME                  = 'COM4';       % Check which port is being used on your controller
+                                            % ex) Windows: 'COM1'   Linux: '/dev/ttyUSB0' Mac: '/dev/tty.usbserial-*'
+                                            
+TORQUE_ENABLE               = 1;            % Value for enabling the torque
+TORQUE_DISABLE              = 0;            % Value for disabling the torque
+DXL_MOVING_STATUS_THRESHOLD = 20;           % Dynamixel moving status threshold
+
+ESC_CHARACTER               = 'e';          % Key for escaping loop
+
+COMM_SUCCESS                = 0;            % Communication Success result value
+COMM_TX_FAIL                = -1001;        % Communication Tx Failed
+
+%% --------CONNECTION---------- %%
+
+% Initialize PortHandler Structs
+% Set the port path
+% Get methods and members of PortHandlerLinux or PortHandlerWindows
+port_num = portHandler(DEVICENAME);
+
+% Initialize PacketHandler Structs
+packetHandler();
+
+dxl_comm_result = COMM_TX_FAIL;           % Communication result
+dxl_error = 0;                              % Dynamixel error
+dxl_present_position = 0;                   % Present position
+
+
+% Open port
+if (openPort(port_num))
+    fprintf('Port Open\n');
+else
+    unloadlibrary(lib_name);
+    fprintf('Failed to open the port\n');
+    input('Press any key to terminate...\n');
+    return;
+end
+
+% Set port baudrate
+if (setBaudRate(port_num, BAUDRATE))
+    fprintf('Baudrate Set\n');
+else
+    unloadlibrary(lib_name);
+    fprintf('Failed to change the baudrate!\n');
+    input('Press any key to terminate...\n');
+    return;
+end
+
+% Disable Dynamixel Torque
+% special ID 254 (stands for ALL Dynamixels used)
+write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 0);
+
+dxl_comm_result = getLastTxRxResult(port_num, PROTOCOL_VERSION);
+dxl_error = getLastRxPacketError(port_num, PROTOCOL_VERSION);
+
+if dxl_comm_result ~= COMM_SUCCESS
+    fprintf('%s\n', getTxRxResult(PROTOCOL_VERSION, dxl_comm_result));
+elseif dxl_error ~= 0
+    fprintf('%s\n', getRxPacketError(PROTOCOL_VERSION, dxl_error));
+else
+    fprintf('Dynamixel has been successfully connected \n');
+end
+
+%% ---------------DYNAMIXEL-INIT------------------- %%
+
+% ---------- SET MOTION LIMITS -------------- %
+
+% Put actuators into Position Control Mode
+for i = 1:5
+    write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_PRO_OPERATING_MODE, 3);
+end
+
+% Set drive mode to time-based profile - give a time to reach goal by
+% Set Bit 0 to 1 for Reverse (Clockwise Positive) - i.e. Drive mode = 5
+% drive_modes = [4, 5, 5, 5, 4];
+% write4ByteTxRx(port_num, PROTOCOL_VERSION, 11, ADDR_PRO_DRIVE_MODE, 4);
+
+% Set homing offset
+% homing_offsets = [-1024, 1024, -1024];
+% for i = 1:3
+%     write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_PRO_HOMING_0FFSET, homing_offsets(i));
+% end
+
+% Set actuator limits
+MAX_POS = [2200, 2200, 4300, 3100, 2600];
+MIN_POS = [0, 50, 2000, 650, 1400];
+for i = 1: 5
+    write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_MAX_POS, MAX_POS(i));
+    write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_MIN_POS, MIN_POS(i));
+end
+
+% PID for actuator 2 - shoulder
+% PID_values = [400 50 0]; % default is 800 0 0 
+% write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(2), ADDR_POS_P_GAIN, PID_values(1));
+% write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(2), ADDR_POS_I_GAIN, PID_values(2));
+% write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(2), ADDR_POS_D_GAIN, PID_values(3));
+
+
+% VA in time based profile
+% Profile Acceleration(108) sets acceleration time of the Profile.
+% Profile Velocity(112) sets the time span to reach the velocity (the total time) of the Profile.
+% 0-30,000 where 0 is max. E.g. 5000 ->  movement is done around 5s theoretically.
+setVAProfile(2000,200,port_num);
+
+write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 1);
+
+%% ---------------HOME------------------- %%
+
+% home currently an elbow up position
+% home_positions = [90 180 140 220 130];         % in degrees
+
+% elbow down
+% home_positions = [90 36 -92 56 130];        
+% rest_positions = [90 25 -88 63 1500];    
+% 
+% for i = 1:5
+%     write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_PRO_GOAL_POSITION, degToEnc(home_positions(i)));
+% end
+
+% pause(3);
+
+%% Task 2
+
+setVAProfile(1000,100,port_num);
+
+movePos(0, 12.5, 5, -90, port_num); % move to known pos
+
+%%
+cube_starts = {[8,3],[0,9],[-6,6]};
+cube_ends = {[5,5],[0,4],[-4,0]};
+current_pose = [0,12.5,5,-90];
+cube_orientations = {'away','down','away'};
+
+commands_2a = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
+commands_2b = Task_2("b", cube_ends, cube_starts, cube_orientations, current_pose);
+commands_2c = Task_2("c", cube_starts, cube_ends, cube_orientations, current_pose);
+
+runCommands(commands_2b, port_num);
+
+% In theory, better to update pos before it stops motion when trajectory
+% following?
+
+
+%% ---------------RESET------------------- %%
+% for i = 1:5
+%     write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_PRO_GOAL_POSITION, degToEnc(rest_positions(i)));
+% end
+% pause(3);
+
+% Disable Dynamixel Torque
+write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 0);
+
+dxl_comm_result = getLastTxRxResult(port_num, PROTOCOL_VERSION);
+dxl_error = getLastRxPacketError(port_num, PROTOCOL_VERSION);
+if dxl_comm_result ~= COMM_SUCCESS
+    fprintf('%s\n', getTxRxResult(PROTOCOL_VERSION, dxl_comm_result));
+elseif dxl_error ~= 0
+    fprintf('%s\n', getRxPacketError(PROTOCOL_VERSION, dxl_error));
+end
+
+% Close port
+closePort(port_num);
+fprintf('Port Closed \n');
+
+% Unload Library
+unloadlibrary(lib_name);
+
+close all;
+clear all;
+
+%% HELPER FUNCTIONS
+
+% Encoder angle -> degrees function
+function degrees = encToDeg(angle)
+    degrees = angle*45/512;
+end
+% Encoder angle -> radians function
+function radians = encToRad(angle)
+    radians = angle*pi/2048;
+end
+
+function encoder = degToEnc(angle)
+    encoder = (angle / 360) * 4096;
+end
+
+function encoder = radToEnc(angle)
+    encoder = (angle / (2*pi)) * 4096;
+end
+
+function setVAProfile(velocity, accel, port_num)
+    DXL_IDS = [11, 12, 13, 14, 15];
+    for i = 1:5
+        write4ByteTxRx(port_num, 2.0, DXL_IDS(i), 112, velocity);
+        write4ByteTxRx(port_num, 2.0, DXL_IDS(i), 108, accel);
+    end
+end
+
