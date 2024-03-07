@@ -42,7 +42,7 @@ PROTOCOL_VERSION            = 2.0;          % See which protocol version is used
 % Default setting
 DXL_IDS                     = [11, 12, 13, 14, 15];
 BAUDRATE                    = 115200;
-DEVICENAME                  = 'COM4';       % Check which port is being used on your controller
+DEVICENAME                  = 'COM8';       % Check which port is being used on your controller
                                             % ex) Windows: 'COM1'   Linux: '/dev/ttyUSB0' Mac: '/dev/tty.usbserial-*'
                                             
 TORQUE_ENABLE               = 1;            % Value for enabling the torque
@@ -125,7 +125,7 @@ end
 % end
 
 % Set actuator limits
-MAX_POS = [2200, 2200, 4300, 3100, 2600];
+MAX_POS = [2200, 2200, 4000, 3100, 2600];
 MIN_POS = [0, 50, 2000, 650, 1400];
 for i = 1: 5
     write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_MAX_POS, MAX_POS(i));
@@ -166,19 +166,26 @@ write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 1);
 
 setVAProfile(1000,100,port_num);
 
-movePos(0, 12.5, 5, -90, port_num); % move to known pos
+% movePos(0, 15, 15, -80, port_num); % move to known pos
+openGripper(2,0,port_num)
+
 
 %%
-cube_starts = {[8,3],[0,9],[-6,6]};
-cube_ends = {[5,5],[0,4],[-4,0]};
-current_pose = [0,12.5,5,-90];
-cube_orientations = {'away','down','away'};
-
-commands_2a = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
-commands_2b = Task_2("b", cube_ends, cube_starts, cube_orientations, current_pose);
-commands_2c = Task_2("c", cube_starts, cube_ends, cube_orientations, current_pose);
-
-runCommands(commands_2b, port_num);
+% cube_starts = {[8,3],[0,9],[-6,6]};
+% cube_ends = {[5,5],[0,4],[-4,0]};
+% current_pose = [0,15,5,-90];
+% cube_orientations = {'up','up','up'};
+% 
+% % commands_2a = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
+% % commands_2b = Task_2("b", cube_starts, cube_ends, cube_orientations, current_pose);
+% % commands_2c = Task_2("c", cube_starts, cube_ends, cube_orientations, current_pose);
+% 
+% placement = [8,0];
+% % current_pose = [0,0,0,-90];
+% commands_3pickup = Task_3("pickup", placement, current_pose);
+% commands_3dropoff = Task_3("dropoff", placement, current_pose);
+% 
+% runCommands(commands_3pickup, port_num);
 
 % In theory, better to update pos before it stops motion when trajectory
 % following?

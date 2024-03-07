@@ -6,9 +6,9 @@ function out_commands = Task_2(task_ID, cube_starts, cube_ends, cube_orientation
     % Cube side length
     cube_length = 2.5;
     % Height above cube centre for gripper to not collide
-    cube_clearance = cube_length/2 + 3;
+    cube_clearance = cube_length/2 + 3.5;
     % Height of cube stands
-    stand_height = 1.5;
+    stand_height = 2;
     % Gripper percentage to grip and drop cubes
     open_state = 2*cube_length;
     closed_state = cube_length;
@@ -48,10 +48,13 @@ function out_list= move_cubes(C_pos_list, E_pos_list, cube_clearance, open_state
 
         % fix for shoulder (as distance from origin increase, starts
         % drooping from arm weight => effects z)
+        m = 0.08;
+        c = 9.5;
+        k=8.6;
         additional_height = 0;
-        if(sqrt(C_pos(1)^2+C_pos(2)^2) > 7.5)
-            additional_height = sqrt(C_pos(1)^2+C_pos(2)^2)/14.2
-        end
+        %if((sqrt(C_pos(1)^2+C_pos(2)^2) * m) - (c-k) > 0)
+            additional_height = (sqrt(C_pos(1)^2+C_pos(2)^2) * m) - (c-k);
+        %end
 
         % Open gripper, move to working height, and move to cube
         out_list(end+1,:) = ["gripper", open_state, 0, 0];
@@ -79,7 +82,13 @@ end
 function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_state, closed_state, current_pose)
     out_list = [];
     % All cubes should have same height when rotating
-    working_height = C_pos_list{1}(3) + cube_clearance;
+    working_height = C_pos_list{1}(3) + 2*cube_clearance;
+
+    % fix for shoulder (as distance from origin increase, starts
+    % drooping from arm weight => effects z)
+    m = 0.08;
+    c = 9.5;
+    k=8.6;
     
     % Select one cube at a time
     for i = 1:numel(C_pos_list)
@@ -112,16 +121,20 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
             out_list(end+1,:) = ["gripper", open_state, 0, 0];
             out_list(end+1,:) = [current_pose(1),current_pose(2),working_height,-90];
             out_list(end+1,:) = [C_pos(1),C_pos(2),working_height,-90];
+            out_list(end+1,:) = [C_pos(1),C_pos(2),working_height,next_phi];
 
             for j = 1:abs(rotations)
-                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3),next_phi];
+                additional_height = (sqrt(C_pos(1)^2+C_pos(2)^2) * m) - (c-k);
+                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height,next_phi];
                 out_list(end+1,:) = ["gripper", closed_state, 0, 0];
-                out_list(end+1,:) = [C_pos(1),C_pos(2),working_height,next_phi];
+                out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+cube_clearance,next_phi];
                 out_list(end+1,:) = [C_pos(1),C_pos(2),working_height,next_phi+(sign(rotations)*90)];
-                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3),(next_phi+(sign(rotations)*90))];
+                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height,(next_phi+(sign(rotations)*90))];
                 out_list(end+1,:) = ["gripper", open_state, 0, 0];
+                out_list(end+1,:) = [C_pos(1),C_pos(2),working_height,(next_phi+(sign(rotations)*90))];
             end
-            current_pose = [C_pos(1),C_pos(2),C_pos(3),(next_phi+(sign(rotations)*90))];
+            out_list(end+1,:) = [C_pos(1),C_pos(2),working_height,-90];
+            current_pose = [C_pos(1),C_pos(2),working_height,-90];
         end 
     end
 

@@ -7,9 +7,18 @@ switch state
     case 1
         if(open)
             write4ByteTxRx(port_num, 2.0, 15, 116, 1400);
-            pause(1);
+            pause(0.6);
         else 
             write4ByteTxRx(port_num, 2.0, 15, 116, 2300);
+            pause(1);
+        end
+
+    case 2
+        if(open)
+            write4ByteTxRx(port_num, 2.0, 15, 116, 1400);
+            pause(0.6);
+        else 
+            write4ByteTxRx(port_num, 2.0, 15, 116, 2350);
             pause(1);
         end
     otherwise
