@@ -5,8 +5,8 @@ function out_commands = Task_2(task_ID, cube_starts, cube_ends, cube_orientation
     grid_multiplier = 2.5;
     % Cube side length
     cube_length = 2.5;
-    % Height above cube centre for gripper to not collide
-    cube_clearance = cube_length/2 + 3.5;
+    % Height above cube top for gripper to not collide
+    cube_clearance = cube_length/2 + 2;
     % Height of cube stands
     stand_height = 2;
     % Gripper percentage to grip and drop cubes
@@ -39,7 +39,10 @@ function out_list= move_cubes(C_pos_list, E_pos_list, cube_clearance, open_state
     % (i.e. C1 -> E1 will both be at index 1)
     % Each position must have values [x y z phi] in cm
     out_list = [];
-    
+    % change this to be closer to 0 if required
+    hovering_angle = -90;
+
+    prev_additional_height_E = 0;
     for i = 1:numel(C_pos_list)
         C_pos = C_pos_list{i};
         E_pos = E_pos_list{i};
@@ -47,34 +50,36 @@ function out_list= move_cubes(C_pos_list, E_pos_list, cube_clearance, open_state
         working_height = E_pos(3)+cube_clearance;
 
         % fix for shoulder (as distance from origin increase, starts
-        % drooping from arm weight => effects z)
+        % drooping from arm weight => affects z)
+        % params found using desmos line fitting method detailed in report
         m = 0.08;
         c = 9.5;
         k=8.6;
-        additional_height = 0;
-        %if((sqrt(C_pos(1)^2+C_pos(2)^2) * m) - (c-k) > 0)
-            additional_height = (sqrt(C_pos(1)^2+C_pos(2)^2) * m) - (c-k);
-        %end
+        additional_height_C = (sqrt(C_pos(1)^2+C_pos(2)^2) * m) - (c-k);
+        additional_height_E = (sqrt(E_pos(1)^2+E_pos(2)^2) * m) - (c-k);
 
-        % Open gripper, move to working height, and move to cube
-        out_list(end+1,:) = ["gripper", open_state, 0, 0];
-        out_list(end+1,:) = [current_pose(1),current_pose(2),working_height,-90];
-        out_list(end+1,:) = [C_pos(1),C_pos(2),working_height,-90];
+        % Move to working height, open gripper if first run, and move to cube
+        out_list(end+1,:) = [current_pose(1),current_pose(2),working_height+prev_additional_height_E,hovering_angle];
+        if (i==1)
+            out_list(end+1,:) = ["gripper", open_state, 0, 0];
+        end
+        out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height_C,hovering_angle];
         
         % Pick up cube
-        out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height,-90];
+        out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height_C,-90];
         out_list(end+1,:) = ["gripper", closed_state, 0, 0];
-        out_list(end+1,:) = [C_pos(1),C_pos(2),working_height,-90];
+        out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height_C,hovering_angle];
 
         % Move to end position and place cube
-        out_list(end+1,:) = [E_pos(1),E_pos(2),working_height,-90];
-        out_list(end+1,:) = [E_pos(1),E_pos(2),E_pos(3),-90];
+        out_list(end+1,:) = [E_pos(1),E_pos(2),working_height+additional_height_E,hovering_angle];
+        out_list(end+1,:) = [E_pos(1),E_pos(2),E_pos(3)+additional_height_E,-90];
         out_list(end+1,:) = ["gripper", open_state, 0, 0];
-        current_pose = [E_pos(1),E_pos(2),E_pos(3),-90];
+        current_pose = [E_pos(1),E_pos(2),E_pos(3)+additional_height_E,-90];
+        prev_additional_height_E = additional_height_E;
     end
 
     % Finished placing cubes, reset
-    out_list(end+1,:) = [E_pos(1),E_pos(2),working_height,-90];
+    out_list(end+1,:) = [E_pos(1),E_pos(2),working_height,hovering_angle];
 end
 
 %% REORIENT
