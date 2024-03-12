@@ -12,7 +12,7 @@ function additional_height = getAdditionalHeight(coords)
     if(distance_from_robot < thres)
         additional_height = 0;
     else
-        %additional_height = (-1) * ((m * distance_from_robot) + c);
-        additional_height = 0;
+        additional_height = (-1) * ((m * distance_from_robot) + c);
+        %additional_height = 0;
     end
 end
