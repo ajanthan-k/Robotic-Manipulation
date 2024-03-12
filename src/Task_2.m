@@ -55,8 +55,8 @@ function out_list= move_cubes(C_pos_list, E_pos_list, cube_clearance, open_state
         working_height = E_pos(3)+cube_clearance;
 
 
-        additional_height_C = get_additional_height(C_pos);
-        additional_height_E = get_additional_height(E_pos);
+        additional_height_C = getAdditionalHeight(C_pos);
+        additional_height_E = getAdditionalHeight(E_pos);
 
         % Move to working height, open gripper if first run, and move to cube
         out_list(end+1,:) = [current_pose(1),current_pose(2),working_height+prev_additional_height_E,hovering_angle];
@@ -103,7 +103,7 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
         needs_rotation = true;
         next_phi = -90;
         rotations = 1;
-        additional_height = get_additional_height(C_pos);
+        additional_height = getAdditionalHeight(C_pos);
 
         switch C_ori
             case 'up'
@@ -189,20 +189,4 @@ end
 function [] = gripper(closure)
     fprintf("Gripper space is now %f \n", closure);
     pause(0.2);
-end
-
-function additional_height = get_additional_height(coords)
-    % fix for shoulder (as distance from origin increase, starts
-    % drooping from arm weight => affects z)
-    % params found using desmos line fitting method detailed in report
-    m = 0.08;
-    c = 9.5;
-    k = 8.6;
-    thres = 9;
-    distance_from_robot = sqrt(coords(1)^2+coords(2)^2);
-    if(distance_from_robot < thres)
-        additional_height = 0;
-    else
-        additional_height = (distance_from_robot * m) - (c-k);
-    end
 end
