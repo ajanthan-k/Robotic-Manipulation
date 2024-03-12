@@ -35,7 +35,7 @@ end
 
 function out_list = pickup_pen(pen_end, tip, angle, current_pose, open_state, closed_state)
     out_list = [];
-    hovering_angle = 0;
+    hovering_angle = -45;
     pickup_clearance = 5;
     cap_pull_leeway = 0;
     working_height = pen_end(3)+pickup_clearance;
@@ -54,7 +54,7 @@ end
 
 function out_list = dropoff_pen(cap_opening, tip, angle, current_pose, open_state)
     out_list = [];
-    hovering_angle = 0;
+    hovering_angle = -45;
     cap_entry_leeway = 1;
     push_leeway = 0.5;
     dropoff_clearance = 5;
