@@ -91,7 +91,7 @@ end
 
 % Disable Dynamixel Torque
 % special ID 254 (stands for ALL Dynamixels used)
-write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 0);
+write1ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, TORQUE_DISABLE);
 
 dxl_comm_result = getLastTxRxResult(port_num, PROTOCOL_VERSION);
 dxl_error = getLastRxPacketError(port_num, PROTOCOL_VERSION);
@@ -106,38 +106,17 @@ end
 
 %% ---------------DYNAMIXEL-INIT------------------- %%
 
-% ---------- SET MOTION LIMITS -------------- %
-
-% Put actuators into Position Control Mode
-for i = 1:5
-    write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_PRO_OPERATING_MODE, 3);
-end
-
-% Set drive mode to time-based profile - give a time to reach goal by
-% Set Bit 0 to 1 for Reverse (Clockwise Positive) - i.e. Drive mode = 5
-% drive_modes = [4, 5, 5, 5, 4];
-% write4ByteTxRx(port_num, PROTOCOL_VERSION, 11, ADDR_PRO_DRIVE_MODE, 4);
-
-% Set homing offset
-% homing_offsets = [-1024, 1024, -1024];
-% for i = 1:3
-%     write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_PRO_HOMING_0FFSET, homing_offsets(i));
+% Set actuator limits
+% MAX_POS = [2200, 2200, 4000, 3100, 2600];
+% MIN_POS = [0, 50, 2000, 650, 1400];
+% for i = 1: 5
+%     write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_MAX_POS, MAX_POS(i));
+%     write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_MIN_POS, MIN_POS(i));
 % end
 
-% Set actuator limits
-MAX_POS = [2200, 2200, 4000, 3100, 2600];
-MIN_POS = [0, 50, 2000, 650, 1400];
-for i = 1: 5
-    write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_MAX_POS, MAX_POS(i));
-    write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_MIN_POS, MIN_POS(i));
+if (initDynamixels(port_num, PROTOCOL_VERSION) ~= 0)
+    fprintf('Dynamixels not initialised correctly \n');
 end
-
-% PID for actuator 2 - shoulder
-% PID_values = [400 50 0]; % default is 800 0 0 
-% write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(2), ADDR_POS_P_GAIN, PID_values(1));
-% write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(2), ADDR_POS_I_GAIN, PID_values(2));
-% write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(2), ADDR_POS_D_GAIN, PID_values(3));
-
 
 % VA in time based profile
 % Profile Acceleration(108) sets acceleration time of the Profile.
@@ -145,22 +124,12 @@ end
 % 0-30,000 where 0 is max. E.g. 5000 ->  movement is done around 5s theoretically.
 setVAProfile(2000,200,port_num);
 
-write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 1);
+write1ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 1);
 
 %% ---------------HOME------------------- %%
 
-% home currently an elbow up position
-% home_positions = [90 180 140 220 130];         % in degrees
-
-% elbow down
-% home_positions = [90 36 -92 56 130];        
-% rest_positions = [90 25 -88 63 1500];    
-% 
-% for i = 1:5
-%     write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_PRO_GOAL_POSITION, degToEnc(home_positions(i)));
-% end
-
-% pause(3);
+movePos(0, 10, 10, -90, port_num);
+pause(2);
 
 %% Task 2
 
@@ -194,10 +163,8 @@ openGripper(2,0,port_num)
 
 
 %% ---------------RESET------------------- %%
-% for i = 1:5
-%     write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_PRO_GOAL_POSITION, degToEnc(rest_positions(i)));
-% end
-% pause(3);
+movePos(0, 15, 2, -90, port_num);
+pause(2);
 
 % Disable Dynamixel Torque
 write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 0);
