@@ -22,12 +22,16 @@ function out_commands = Task_2(task_ID, cube_starts, cube_ends, cube_orientation
         out_commands = rotate_cubes(coords_to_cm(cube_starts, grid_multiplier, stand_height), cube_orientations, cube_clearance, open_state, closed_state, current_pose);
     else
         % 2c
-        out_commands = rotate_cubes(coords_to_cm(cube_starts, grid_multiplier, stand_height), cube_orientations, cube_clearance, open_state, closed_state, current_pose);
+        % rotation step
+        cube_starts_reversed = flip(coords_to_cm(cube_starts, grid_multiplier, stand_height));
+        out_commands = rotate_cubes(cube_starts_reversed, cube_orientations, cube_clearance, open_state, closed_state, current_pose)
+        current_pose = [cube_starts_reversed{end}(1),cube_starts_reversed{end}(2),0,-90]; % second two params don't matter
+        % translation step; all translated to 1st item
+        final_end = cube_ends{1};
         for i = 1:numel(cube_ends)
-            curr_end = cube_ends{i};
-            cube_ends{i} = [curr_end(1), curr_end(2), (stand_height+((i+0.5)*cube_length))];
+            cube_ends{i} = [final_end(1), final_end(2), i-0.5];
         end
-        tmp = move_cubes(coords_to_cm(cube_starts, grid_multiplier, stand_height), coords_to_cm(cube_ends, grid_multiplier, stand_height), cube_clearance, open_state, closed_state, current_pose);
+        tmp = move_cubes(coords_to_cm(cube_starts, grid_multiplier, stand_height), coords_to_cm(cube_ends, grid_multiplier, stand_height), cube_clearance, open_state, closed_state, current_pose)
         out_commands = [out_commands; tmp];
     end
 end
@@ -41,6 +45,7 @@ function out_list= move_cubes(C_pos_list, E_pos_list, cube_clearance, open_state
     out_list = [];
     % change this to be closer to 0 if required
     hovering_angle = -90;
+    intermediate_point = 0.5;
 
     prev_additional_height_E = 0;
     for i = 1:numel(C_pos_list)
@@ -61,6 +66,7 @@ function out_list= move_cubes(C_pos_list, E_pos_list, cube_clearance, open_state
         out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height_C,hovering_angle];
         
         % Pick up cube
+        out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height_C+intermediate_point,-90];
         out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height_C,-90];
         out_list(end+1,:) = ["gripper", closed_state, 0, 0];
         out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height_C,hovering_angle];
@@ -68,7 +74,7 @@ function out_list= move_cubes(C_pos_list, E_pos_list, cube_clearance, open_state
         % Move to end position and place cube
         % (with intermediate point for precision)
         out_list(end+1,:) = [E_pos(1),E_pos(2),working_height+additional_height_E,hovering_angle];
-        out_list(end+1,:) = [E_pos(1),E_pos(2),E_pos(3)+additional_height_E+0.5,-90];
+        out_list(end+1,:) = [E_pos(1),E_pos(2),E_pos(3)+additional_height_E+intermediate_point,-90];
         out_list(end+1,:) = [E_pos(1),E_pos(2),E_pos(3)+additional_height_E,-90];
         out_list(end+1,:) = ["gripper", open_state, 0, 0];
         current_pose = [E_pos(1),E_pos(2),E_pos(3)+additional_height_E,-90];
@@ -85,6 +91,7 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
     out_list = [];
     % change this to be closer to 0 if required
     hovering_angle = -90;
+    intermediate_point = 0.5;
     % All cubes should have same height when rotating
     working_height = C_pos_list{1}(3) + 2*cube_clearance;
     
@@ -130,6 +137,7 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
 
             for j = 1:abs(rotations)
                 % Move down, pick up cube, and return to working height
+                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height+intermediate_point,next_phi];
                 out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height,next_phi];
                 out_list(end+1,:) = ["gripper", closed_state, 0, 0];
                 out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,next_phi];
@@ -137,7 +145,7 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
                 out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,(next_phi+(sign(rotations)*90))];
                 % Move down, place cube back 
                 % (intermediate point for precision)
-                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height+0.5,(next_phi+(sign(rotations)*90))];
+                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height+intermediate_point,(next_phi+(sign(rotations)*90))];
                 out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height,(next_phi+(sign(rotations)*90))];
                 out_list(end+1,:) = ["gripper", open_state, 0, 0];
                 % Return to working height
@@ -146,11 +154,11 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
                     out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,next_phi];
                 end
             end
-            % Reset to -90 if required (for travelling)
-            if ((next_phi+(sign(rotations)*90) ~= -90))
-                out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,-90];
+            % Reset to hovering angle if required (for travelling)
+            if ((next_phi+(sign(rotations)*90) ~= hovering_angle))
+                out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height, hovering_angle];
             end
-            current_pose = [C_pos(1),C_pos(2),working_height+additional_height,-90];
+            current_pose = [C_pos(1),C_pos(2),working_height+additional_height,hovering_angle];
         end
     end
 end
