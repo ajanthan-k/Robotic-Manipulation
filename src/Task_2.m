@@ -92,6 +92,8 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
     % change this to be closer to 0 if required
     hovering_angle = -90;
     intermediate_point = 0.5;
+    phi_zero_offset_standard = 2;
+    phi_zero_offset = phi_zero_offset_standard;
     % All cubes should have same height when rotating
     working_height = C_pos_list{1}(3) + 2*cube_clearance;
     
@@ -137,16 +139,26 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
 
             for j = 1:abs(rotations)
                 % Move down, pick up cube, and return to working height
-                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height+intermediate_point,next_phi];
-                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height,next_phi];
+                if (next_phi == 0)
+                    phi_zero_offset = phi_zero_offset_standard;
+                else
+                    phi_zero_offset = 0;
+                end
+                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height+intermediate_point+phi_zero_offset,next_phi];
+                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height+phi_zero_offset,next_phi];
                 out_list(end+1,:) = ["gripper", closed_state, 0, 0];
                 out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,next_phi];
                 % Rotate in-place
                 out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,(next_phi+(sign(rotations)*90))];
                 % Move down, place cube back 
+                if ((next_phi+(sign(rotations)*90)) == 0)
+                    phi_zero_offset_standard = 0;
+                else
+                    phi_zero_offset = 0;
+                end
                 % (intermediate point for precision)
-                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height+intermediate_point,(next_phi+(sign(rotations)*90))];
-                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height,(next_phi+(sign(rotations)*90))];
+                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height+intermediate_point+phi_zero_offset,(next_phi+(sign(rotations)*90))];
+                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height+phi_zero_offset,(next_phi+(sign(rotations)*90))];
                 out_list(end+1,:) = ["gripper", open_state, 0, 0];
                 % Return to working height
                 out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,(next_phi+(sign(rotations)*90))];
