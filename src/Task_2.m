@@ -24,14 +24,14 @@ function out_commands = Task_2(task_ID, cube_starts, cube_ends, cube_orientation
         % 2c
         % rotation step
         cube_starts_reversed = flip(coords_to_cm(cube_starts, grid_multiplier, stand_height));
-        out_commands = rotate_cubes(cube_starts_reversed, cube_orientations, cube_clearance, open_state, closed_state, current_pose)
+        out_commands = rotate_cubes(cube_starts_reversed, cube_orientations, cube_clearance, open_state, closed_state, current_pose);
         current_pose = [cube_starts_reversed{end}(1),cube_starts_reversed{end}(2),0,-90]; % second two params don't matter
         % translation step; all translated to 1st item
         final_end = cube_ends{1};
         for i = 1:numel(cube_ends)
             cube_ends{i} = [final_end(1), final_end(2), i-0.5];
         end
-        tmp = move_cubes(coords_to_cm(cube_starts, grid_multiplier, stand_height), coords_to_cm(cube_ends, grid_multiplier, stand_height), cube_clearance, open_state, closed_state, current_pose)
+        tmp = move_cubes(coords_to_cm(cube_starts, grid_multiplier, stand_height), coords_to_cm(cube_ends, grid_multiplier, stand_height), cube_clearance, open_state, closed_state, current_pose);
         out_commands = [out_commands; tmp];
     end
 end
