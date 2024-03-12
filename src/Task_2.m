@@ -92,7 +92,7 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
     % change this to be closer to 0 if required
     hovering_angle = -90;
     intermediate_point = 0.5;
-    phi_zero_offset_standard = 2;
+    phi_zero_offset_standard = 3.5;
     phi_zero_offset = phi_zero_offset_standard;
     % All cubes should have same height when rotating
     working_height = C_pos_list{1}(3) + 2*cube_clearance;
@@ -152,7 +152,7 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
                 out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,(next_phi+(sign(rotations)*90))];
                 % Move down, place cube back 
                 if ((next_phi+(sign(rotations)*90)) == 0)
-                    phi_zero_offset_standard = 0;
+                    phi_zero_offset = phi_zero_offset_standard;
                 else
                     phi_zero_offset = 0;
                 end

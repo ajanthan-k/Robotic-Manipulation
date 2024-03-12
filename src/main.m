@@ -39,10 +39,9 @@ ADDR_MIN_POS = 52;
 % Protocol version
 PROTOCOL_VERSION            = 2.0;          % See which protocol version is used in the Dynamixel
 
-% Default setting
 DXL_IDS                     = [11, 12, 13, 14, 15];
 BAUDRATE                    = 115200;
-DEVICENAME                  = 'COM8';       % Check which port is being used on your controller
+DEVICENAME                  = 'COM7';       % Check which port is being used on your controller
                                             % ex) Windows: 'COM1'   Linux: '/dev/ttyUSB0' Mac: '/dev/tty.usbserial-*'
                                             
 TORQUE_ENABLE               = 1;            % Value for enabling the torque
@@ -91,7 +90,7 @@ end
 
 % Disable Dynamixel Torque
 % special ID 254 (stands for ALL Dynamixels used)
-write1ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, TORQUE_DISABLE);
+write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, TORQUE_DISABLE);
 
 dxl_comm_result = getLastTxRxResult(port_num, PROTOCOL_VERSION);
 dxl_error = getLastRxPacketError(port_num, PROTOCOL_VERSION);
@@ -124,31 +123,30 @@ end
 % 0-30,000 where 0 is max. E.g. 5000 ->  movement is done around 5s theoretically.
 setVAProfile(2000,200,port_num);
 
-write1ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 1);
+write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 1);
 
 %% ---------------HOME------------------- %%
 
-movePos(0, 10, 10, -90, port_num);
-pause(2);
+movePos(0, 10, 10, -90, port_num, 2.0);
 
 %% Task 2
 
 setVAProfile(1000,100,port_num);
 
-% movePos(0, 15, 15, -80, port_num); % move to known pos
-openGripper(2,0,port_num)
+movePos(0, 15, 10, -90, port_num); % move to known pos
 
 
 %%
-% cube_starts = {[8,3],[0,9],[-6,6]};
-% cube_ends = {[5,5],[0,4],[-4,0]};
-% current_pose = [0,15,5,-90];
+cube_starts = {[8,3],[0,9],[-6,6]};
+% cube_starts = {[4.9,4.9],[0,9],[-6,6]};
+cube_ends = {[4.9,4.9],[0,3.8],[-3.8,0]};
+current_pose = [0,15,10,-90];
 % cube_orientations = {"away","down","towards"}; % all rotation possibilities
-% cube_orientations = {"away","down","away"}; % video demo
+cube_orientations = {"away","down","away"}; % video demo
 % cube_orientations = {"up","up","up"}; %for testing stacking w/o rotation
-% 
-% % commands_2a = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
-% % commands_2b = Task_2("b", cube_starts, cube_ends, cube_orientations, current_pose);
+
+% commands_2a = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
+commands_2b = Task_2("b", cube_starts, cube_ends, cube_orientations, current_pose);
 % % commands_2c = Task_2("c", cube_starts, cube_ends, cube_orientations, current_pose);
 % 
 % placement = [8,0];
@@ -156,17 +154,17 @@ openGripper(2,0,port_num)
 % commands_3pickup = Task_3("pickup", placement, current_pose);
 % commands_3dropoff = Task_3("dropoff", placement, current_pose);
 % 
-% runCommands(commands_3pickup, port_num);
+runCommands(commands_2b, port_num);
 
 % In theory, better to update pos before it stops motion when trajectory
 % following?
 
 
 %% ---------------RESET------------------- %%
-movePos(0, 15, 2, -90, port_num);
-pause(2);
+setVAProfile(2000,200,port_num);
+% movePos(0, 15, 1, -90, port_num, 2.0);
 
-% Disable Dynamixel Torque
+% Disable Dynamixel Torque                                                                                                                                          
 write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 0);
 
 dxl_comm_result = getLastTxRxResult(port_num, PROTOCOL_VERSION);

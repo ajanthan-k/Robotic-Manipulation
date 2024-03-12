@@ -29,13 +29,13 @@ function status = initDynamixels(port_num, PROTOCOL_VERSION)
     end
     
     % refactor to do all offsets in code
-    homing_offsets = [-1024, 1024, -1024];
-    for i = 1:3
-        write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_PRO_HOMING_0FFSET, homing_offsets(i));
-    end
+%     homing_offsets = [-1024, 1024, -1024];
+%     for i = 1:3
+%         write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_PRO_HOMING_0FFSET, homing_offsets(i));
+%     end
     
     % Set actuator limits
-    MAX_POS = [2200, 2200, 4000, 3100, 2600];
+    MAX_POS = [2400, 2200, 4000, 3100, 2600];
     MIN_POS = [0, 50, 2000, 650, 1400];
     for i = 1:5
         write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_MAX_POS, MAX_POS(i));
@@ -43,11 +43,11 @@ function status = initDynamixels(port_num, PROTOCOL_VERSION)
     end
     
     % Set PID for actuator 2 - shoulder
-    PID_values = [400, 50, 0]; % default is 800 0 0 
-    write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(2), ADDR_POS_P_GAIN, PID_values(1));
-    write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(2), ADDR_POS_I_GAIN, PID_values(2));
-    write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(2), ADDR_POS_D_GAIN, PID_values(3));
-    
+%     PID_values = [600, 100, 0]; % default is 800 0 0 
+%     write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(2), ADDR_POS_P_GAIN, PID_values(1));
+%     write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(2), ADDR_POS_I_GAIN, PID_values(2));
+%     write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(2), ADDR_POS_D_GAIN, PID_values(3));
+%     
     %% Read and check if values were set correctly
     status = 0;
     
@@ -70,13 +70,13 @@ function status = initDynamixels(port_num, PROTOCOL_VERSION)
     end
     
     % Check Homing Offset
-    for i = 1:3
-        offset = read4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_PRO_HOMING_0FFSET);
-        if offset ~= homing_offsets(i)
-            fprintf('Homing offset not set correctly for Dynamixel %d\n', DXL_IDS(i));
-            status = -1;
-        end
-    end
+%     for i = 1:3
+%         offset = read4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_PRO_HOMING_0FFSET);
+%         if offset ~= homing_offsets(i)
+%             fprintf('Homing offset not set correctly for Dynamixel %d\n', DXL_IDS(i));
+%             status = -1;
+%         end
+%     end
     
     % Check Max Position Limit
     for i = 1:5
@@ -97,12 +97,12 @@ function status = initDynamixels(port_num, PROTOCOL_VERSION)
     end
     
     % Check PID values for actuator 2
-    p_gain = read2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(2), ADDR_POS_P_GAIN);
-    i_gain = read2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(2), ADDR_POS_I_GAIN);
-    d_gain = read2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(2), ADDR_POS_D_GAIN);
-    if p_gain ~= PID_values(1) || i_gain ~= PID_values(2) || d_gain ~= PID_values(3)
-        fprintf('PID values not set correctly for Dynamixel %d\n', DXL_IDS(2));
-        status = -1;
-    end
+%     p_gain = read2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(2), ADDR_POS_P_GAIN);
+%     i_gain = read2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(2), ADDR_POS_I_GAIN);
+%     d_gain = read2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(2), ADDR_POS_D_GAIN);
+%     if p_gain ~= PID_values(1) || i_gain ~= PID_values(2) || d_gain ~= PID_values(3)
+%         fprintf('PID values not set correctly for Dynamixel %d\n', DXL_IDS(2));
+%         status = -1;
+%     end
     
 end
