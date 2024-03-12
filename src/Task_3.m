@@ -1,6 +1,7 @@
 %% MAIN
 function out_commands = Task_3(task_ID, pen_placement, current_pose)
     % NB: Assume pen_placement has y=z=0 and pen is facing towards robot
+    % For this task offset is assumed negligible
     % --- Set up constants --- (all in cm)
     % Square hole number -> cm multiplier
     grid_multiplier = 2.5;
@@ -34,32 +35,37 @@ end
 
 function out_list = pickup_pen(pen_end, tip, angle, current_pose, open_state, closed_state)
     out_list = [];
+    hovering_angle = -45;
     pickup_clearance = 3;
+    cap_pull_leeway = 0;
     working_height = pen_end(3)+pickup_clearance;
     % Move to working height
-    out_list(end+1,:) = [current_pose(1), current_pose(2), working_height, 0];
+    out_list(end+1,:) = [current_pose(1), current_pose(2), working_height, hovering_angle];
     out_list(end+1,:) = ["gripper", open_state, 0, 0];
     % Move to pen
-    out_list(end+1,:) = [pen_end(1), pen_end(2), working_height, 0];
+    out_list(end+1,:) = [pen_end(1), pen_end(2), working_height, hovering_angle];
     out_list(end+1,:) = [pen_end(1), pen_end(2), pen_end(3), -angle];
     % Grab and pull
     out_list(end+1,:) = ["gripper", closed_state, 0, 0];
-    out_list(end+1,:) = [pen_end(1)-(tip*sind(angle)), pen_end(2), pen_end(3)+(tip*cosd(angle)), -angle];
+    out_list(end+1,:) = [pen_end(1)-((tip+cap_pull_leeway)*cosd(angle)), pen_end(2), pen_end(3)+((tip+cap_pull_leeway)*sind(angle)), -angle];
     % Return to middle axis, ready to draw
-    out_list(end+1,:) = [0, 15, working_height, -90];
+    out_list(end+1,:) = [0, 15, working_height, hovering_angle];
 end
 
 function out_list = dropoff_pen(cap_opening, tip, angle, current_pose, open_state)
     out_list = [];
+    hovering_angle = -45;
+    cap_entry_leeway = 1;
+    push_leeway = 0.5;
     dropoff_clearance = 3;
     working_height = cap_opening(3)+dropoff_clearance;
     % Move to working height and then to cap opening
-    out_list(end+1,:) = [current_pose(1), current_pose(2), working_height, -angle];
-    out_list(end+1,:) = [cap_opening(1)-(tip*sind(angle)), cap_opening(2), cap_opening(3)+(tip*cosd(angle)), -angle];
+    out_list(end+1,:) = [current_pose(1), current_pose(2), working_height, hovering_angle];
+    out_list(end+1,:) = [cap_opening(1)-((tip+cap_entry_leeway)*cosd(angle)), cap_opening(2), cap_opening(3)+((tip+cap_entry_leeway)*sind(angle)), -angle];
     % Push and release
-    out_list(end+1,:) = [cap_opening(1)+(tip*sind(angle)), cap_opening(2), cap_opening(3)-(tip*cosd(angle)), -angle];
+    out_list(end+1,:) = [cap_opening(1)+((tip+push_leeway)*cosd(angle)), cap_opening(2), cap_opening(3)-((tip+push_leeway)*sind(angle)), -angle];
     out_list(end+1,:) = ["gripper", open_state, 0, 0];
     % Reset
-    out_list(end+1,:) = [cap_opening(1)-(tip*sind(angle)), cap_opening(2), cap_opening(3)+(tip*cosd(angle)), -angle];
+    out_list(end+1,:) = [cap_opening(1)-((tip+cap_entry_leeway)*cosd(angle)), cap_opening(2), cap_opening(3)+((tip+cap_entry_leeway)*sind(angle)), -angle];
     out_list(end+1,:) = [current_pose(1), current_pose(2), working_height, 0];
 end
