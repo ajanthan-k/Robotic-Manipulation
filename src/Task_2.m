@@ -94,6 +94,7 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
     intermediate_point = 0.5;
     phi_zero_offset_standard = 3.5;
     phi_zero_offset = phi_zero_offset_standard;
+    next_phi_offset = 10;
     % All cubes should have same height when rotating
     working_height = C_pos_list{1}(3) + 2*cube_clearance;
     
@@ -103,7 +104,7 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
         C_ori = C_ori_list{i};
         
         needs_rotation = true;
-        next_phi = -90;
+        next_phi = -90+next_phi_offset;
         rotations = 1;
         additional_height = getAdditionalHeight(C_pos);
 
@@ -111,13 +112,13 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
             case 'up'
                 needs_rotation = false;
             case 'away'
-                next_phi = -90;
+                next_phi = -90+next_phi_offset;
                 rotations = 1;
             case 'towards'
-                next_phi = 0;
+                next_phi = 0+next_phi_offset;
                 rotations = -1;
             case 'down'
-                next_phi = -90;
+                next_phi = -90+next_phi_offset;
                 rotations = 2;
             otherwise
                 needs_rotation = false;
