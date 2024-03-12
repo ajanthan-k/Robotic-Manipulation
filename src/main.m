@@ -174,14 +174,16 @@ openGripper(2,0,port_num)
 % cube_starts = {[8,3],[0,9],[-6,6]};
 % cube_ends = {[5,5],[0,4],[-4,0]};
 % current_pose = [0,15,5,-90];
-% cube_orientations = {'up','up','up'};
+% cube_orientations = {"away","down","towards"}; % all rotation possibilities
+% cube_orientations = {"away","down","away"}; % video demo
+% cube_orientations = {"up","up","up"}; %for testing stacking w/o rotation
 % 
 % % commands_2a = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
 % % commands_2b = Task_2("b", cube_starts, cube_ends, cube_orientations, current_pose);
 % % commands_2c = Task_2("c", cube_starts, cube_ends, cube_orientations, current_pose);
 % 
 % placement = [8,0];
-% % current_pose = [0,0,0,-90];
+% % current_pose = [0,15,5,-90];
 % commands_3pickup = Task_3("pickup", placement, current_pose);
 % commands_3dropoff = Task_3("dropoff", placement, current_pose);
 % 
