@@ -148,12 +148,13 @@ openGripper(2, 0, port_num); % open gripper
 runCommands(commands, port_num); % do task
 
 %% Task 3
+% Calculations
 placement = [8,0];
 % current_pose = [0,15,10,-90];
-% 
 commands_3pickup = Task_3("pickup", placement, current_pose);
 commands_3dropoff = Task_3("dropoff", placement, current_pose);
-% % 
+
+% Movement
 runCommands(commands_3pickup, port_num);
 
 movePos(-6, 20, 2, -60, port_num, pause_time = 2.0, effector = 2);
@@ -183,6 +184,27 @@ movePos(-10, 16, 15, -60, port_num, pause_time = 1);
 % In theory, better to update pos before it stops motion when trajectory
 % following?
 
+%% Task 4 recording
+
+% Detorque
+write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 0);
+
+% Recording parameters
+recording_length = 6; %seconds
+sampling_interval = 0.1; %seconds
+N_samples = recording_length/sampling_interval;
+% Record thetas
+theta_samples = zeros(N_samples,4);
+for i = 1:N_samples
+    theta_samples(i,:) = readPosAll;
+    pause(sampling_interval);
+end
+% Record positions
+position_samples = zeros(size(theta_samples));
+for i = 1:N_samples
+    position_samples(i,:) = forwardKinematics(theta_samples(i,:), 3);
+end
+save("pancake_flip.mat", "position_samples");
 
 %% ---------------RESET------------------- %%
 setVAProfile(2000,200,port_num);
