@@ -1,21 +1,30 @@
 % Function to get thetas and write to target position
 function thetas = ...
-    inverseKinematics(x1, y1, z1, phi, penHeld, s3PositiveRoot, x2PositiveRoot)
+    inverseKinematics(x1, y1, z1, phi, effector, s3PositiveRoot, x2PositiveRoot)
     arguments
         x1 double
         y1 double
         z1 double
         phi double
-        penHeld = false;
+        effector int32 = 1; % default
         s3PositiveRoot = false;
         x2PositiveRoot = true;
     end
     d1 = 7.7;
     a2 = 13;
     a3 = 12.4;
-    a4 = 14; % Task 2: 13, Task 3: Pen picking: 13, Drawing: 25
-    if penHeld
-		a4 = 25;
+    % a4 = 14; % Task 2: 13, Task 3: Pen picking: 13, Drawing: 24
+    switch effector
+        case 1
+            a4 = 14;
+        case 2
+            a4 = 24; % pen
+        case 3
+            a4 = 12; % task 4 (PLACEHOLDER)
+        case 4
+            a4 = 20; % task 4 with spatula (PLACEHOLDER)
+        otherwise
+            a4 = 14; % default value 
     end
     phi = deg2rad(phi);
     theta1 = atan2(y1, x1);
