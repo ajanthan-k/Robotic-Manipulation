@@ -6,7 +6,7 @@ function out_commands = Task_3(task_ID, pen_placement, current_pose)
     % Square hole number -> cm multiplier
     grid_multiplier = 2.5;
     % Pen length (end to top of cap)
-    pen_length = 14;
+    pen_length = 12.5;
     % Cap length
     cap_length = 4.3;
     % Length under cap to tip
@@ -36,8 +36,8 @@ end
 function out_list = pickup_pen(pen_end, tip, angle, current_pose, open_state, closed_state)
     out_list = [];
     hovering_angle = -45;
-    pickup_clearance = 5;
-    cap_pull_leeway = 0;
+    pickup_clearance = 6;
+    cap_pull_leeway = 1;
     working_height = pen_end(3)+pickup_clearance;
     % Move to working height
     out_list(end+1,:) = [current_pose(1), current_pose(2), working_height, hovering_angle];
@@ -57,7 +57,7 @@ function out_list = dropoff_pen(cap_opening, tip, angle, current_pose, open_stat
     hovering_angle = -45;
     cap_entry_leeway = 1;
     push_leeway = 0.5;
-    dropoff_clearance = 5;
+    dropoff_clearance = 6;
     working_height = cap_opening(3)+dropoff_clearance;
     % Move to working height and then to cap opening
     out_list(end+1,:) = [current_pose(1), current_pose(2), working_height, hovering_angle];

@@ -44,7 +44,7 @@ function out_list= move_cubes(C_pos_list, E_pos_list, cube_clearance, open_state
     % Each position must have values [x y z phi] in cm
     out_list = [];
     % change this to be closer to 0 if required
-    hovering_angle = -90;
+    hovering_angle = -75;
     intermediate_point = 0.5;
 
     prev_additional_height_E = 0;
@@ -90,11 +90,11 @@ end
 function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_state, closed_state, current_pose)
     out_list = [];
     % change this to be closer to 0 if required
-    hovering_angle = -90;
+    hovering_angle = -75;
     intermediate_point = 0.5;
-    phi_zero_offset_standard = 3.5;
+    phi_zero_offset_standard = 0;
     phi_zero_offset = phi_zero_offset_standard;
-    next_phi_offset = 10;
+    next_phi_offset = 0;
     % All cubes should have same height when rotating
     working_height = C_pos_list{1}(3) + 2*cube_clearance;
     

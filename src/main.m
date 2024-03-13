@@ -105,14 +105,6 @@ end
 
 %% ---------------DYNAMIXEL-INIT------------------- %%
 
-% Set actuator limits
-% MAX_POS = [2200, 2200, 4000, 3100, 2600];
-% MIN_POS = [0, 50, 2000, 650, 1400];
-% for i = 1: 5
-%     write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_MAX_POS, MAX_POS(i));
-%     write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_MIN_POS, MIN_POS(i));
-% end
-
 if (initDynamixels(port_num, PROTOCOL_VERSION) ~= 0)
     fprintf('Dynamixels not initialised correctly \n');
 end
@@ -127,34 +119,59 @@ write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 1);
 
 %% ---------------HOME------------------- %%
 
-movePos(0, 10, 10, -90, port_num, 2.0);
+movePos(-6, 20, 13, -70, port_num, 2.0);
 
 %% Task 2
 
 setVAProfile(1000,100,port_num);
 
-movePos(0, 15, 10, -90, port_num); % move to known pos
-
+% movePos(0, 15, 10, -90, port_num); % move to known pos
+% openGripper(2, 0, port_num);
 
 %%
-cube_starts = {[8,3],[0,9],[-6,6]};
-% cube_starts = {[4.9,4.9],[0,9],[-6,6]};
-cube_ends = {[4.9,4.9],[0,3.8],[-3.8,0]};
+% cube_starts = {[8,3],[0,9],[-6,6]};
+% cube_ends = {[4.9,4.95],[0,3.8],[-3.9,0]};
 current_pose = [0,15,10,-90];
+
 % cube_orientations = {"away","down","towards"}; % all rotation possibilities
-cube_orientations = {"away","down","away"}; % video demo
+% cube_orientations = {"away","down","away"}; % video demo
 % cube_orientations = {"up","up","up"}; %for testing stacking w/o rotation
 
 % commands_2a = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
-commands_2b = Task_2("b", cube_starts, cube_ends, cube_orientations, current_pose);
-% % commands_2c = Task_2("c", cube_starts, cube_ends, cube_orientations, current_pose);
+% commands_2b = Task_2("b", cube_starts, cube_ends, cube_orientations, current_pose);
+% commands_2c = Task_2("c", cube_starts, cube_ends, cube_orientations, current_pose);
 % 
-% placement = [8,0];
-% % current_pose = [0,15,5,-90];
-% commands_3pickup = Task_3("pickup", placement, current_pose);
-% commands_3dropoff = Task_3("dropoff", placement, current_pose);
+placement = [8,0];
+% current_pose = [0,15,10,-90];
 % 
-runCommands(commands_2b, port_num);
+commands_3pickup = Task_3("pickup", placement, current_pose);
+commands_3dropoff = Task_3("dropoff", placement, current_pose);
+% % 
+runCommands(commands_3pickup, port_num);
+
+movePos(-6, 20, 2, -60, port_num, pause_time = 2.0, effector = 2);
+% moveStraightLine([-6, 20, 2, -60], [-6, 20, 2, -60], 1, port_num, pause_time = 1);
+% pause(1)
+setVAProfile(200,100,port_num);
+
+%pen down
+movePos(-6, 20, 1, -60, port_num, pause_time = 2.0, effector = 2);
+
+moveStraightLine([-6, 20, 1, -60], [-14, 12.5, 0.8, -60], 40, port_num, pause_time = 0.15);
+pause(1);
+moveStraightLine([-14, 12.5, 0.8, -60], [-14,20,1,-60], 40, port_num, pause_time = 0.15);
+pause(1);
+moveStraightLine([-14,20,1,-60], [-6, 20, 1, -60], 40, port_num, pause_time = 0.15);
+
+pause(1);
+
+moveArc(-10, 20, 0.7, -60, 4, 2*pi, pi, 60, port_num, pause_time = 0.15);
+pause(2);
+
+setVAProfile(1000,100,port_num);
+
+movePos(-10, 16, 15, -60, port_num, pause_time = 1);
+
 
 % In theory, better to update pos before it stops motion when trajectory
 % following?
@@ -202,13 +219,5 @@ end
 
 function encoder = radToEnc(angle)
     encoder = (angle / (2*pi)) * 4096;
-end
-
-function setVAProfile(velocity, accel, port_num)
-    DXL_IDS = [11, 12, 13, 14, 15];
-    for i = 1:5
-        write4ByteTxRx(port_num, 2.0, DXL_IDS(i), 112, velocity);
-        write4ByteTxRx(port_num, 2.0, DXL_IDS(i), 108, accel);
-    end
 end
 
