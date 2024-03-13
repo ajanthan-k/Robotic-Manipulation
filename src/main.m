@@ -199,12 +199,20 @@ for i = 1:N_samples
     theta_samples(i,:) = readPosAll;
     pause(sampling_interval);
 end
+pause(3)
+% Retorque
+write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 1);
 % Record positions
 position_samples = zeros(size(theta_samples));
 for i = 1:N_samples
     position_samples(i,:) = forwardKinematics(theta_samples(i,:), 3);
 end
 save("pancake_flip.mat", "position_samples");
+
+%% Task 4
+
+% commands_4 = Task_4();
+% runCommands(commands_4, port_num);
 
 %% ---------------RESET------------------- %%
 setVAProfile(2000,200,port_num);
