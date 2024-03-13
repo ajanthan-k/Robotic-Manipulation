@@ -122,25 +122,32 @@ write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 1);
 movePos(-6, 20, 13, -70, port_num, 2.0);
 
 %% Task 2
-
-setVAProfile(1000,100,port_num);
-
-% movePos(0, 15, 10, -90, port_num); % move to known pos
-% openGripper(2, 0, port_num);
-
-%%
-% cube_starts = {[8,3],[0,9],[-6,6]};
-% cube_ends = {[4.9,4.95],[0,3.8],[-3.9,0]};
+% Pre-calculations
+cube_starts = {[8,3],[0,9],[-6,6]};
+cube_ends = {[4.9,4.95],[0,3.8],[-3.9,0]};
 current_pose = [0,15,10,-90];
 
 % cube_orientations = {"away","down","towards"}; % all rotation possibilities
-% cube_orientations = {"away","down","away"}; % video demo
+cube_orientations = {"away","down","away"}; % video demo
 % cube_orientations = {"up","up","up"}; %for testing stacking w/o rotation
 
-% commands_2a = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
-% commands_2b = Task_2("b", cube_starts, cube_ends, cube_orientations, current_pose);
-% commands_2c = Task_2("c", cube_starts, cube_ends, cube_orientations, current_pose);
-% 
+% SELECT TASK HERE
+task_code = "2a";
+if (task_code == "2a")
+    commands = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
+elseif (task_code == "2b")
+    commands = Task_2("b", cube_starts, cube_ends, cube_orientations, current_pose);
+else
+    commands = Task_2("c", cube_starts, cube_ends, cube_orientations, current_pose);
+end
+
+% Movement
+setVAProfile(1000,100,port_num); % set profile
+movePos(0, 15, 10, -90, port_num); % move to known pos
+openGripper(2, 0, port_num); % open gripper
+runCommands(commands, port_num); % do task
+
+%% Task 3
 placement = [8,0];
 % current_pose = [0,15,10,-90];
 % 
