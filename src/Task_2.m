@@ -16,7 +16,7 @@ function out_commands = Task_2(task_ID, cube_starts, cube_ends, cube_orientation
     out_commands = [];
     if(task_ID == 'a')
         % 2a
-        out_commands = move_cubes(coords_to_cm(cube_starts, grid_multiplier, stand_height), coords_to_cm(cube_ends, grid_multiplier, stand_height), cube_clearance, open_state, closed_state, current_pose);
+        out_commands = move_cubes(coords_to_cm(cube_starts, grid_multiplier, stand_height), coords_to_cm(cube_ends, grid_multiplier, stand_height), cube_clearance, open_state, closed_state, current_pose, "translation");
     elseif (task_ID == 'b')
         % 2b
         out_commands = rotate_cubes(coords_to_cm(cube_starts, grid_multiplier, stand_height), cube_orientations, cube_clearance, open_state, closed_state, current_pose);
@@ -31,20 +31,27 @@ function out_commands = Task_2(task_ID, cube_starts, cube_ends, cube_orientation
         for i = 1:numel(cube_ends)
             cube_ends{i} = [final_end(1), final_end(2), i-0.5];
         end
-        tmp = move_cubes(coords_to_cm(cube_starts, grid_multiplier, stand_height), coords_to_cm(cube_ends, grid_multiplier, stand_height), cube_clearance, open_state, closed_state, current_pose);
+        tmp = move_cubes(coords_to_cm(cube_starts, grid_multiplier, stand_height), coords_to_cm(cube_ends, grid_multiplier, stand_height), cube_clearance, open_state, closed_state, current_pose, "stacking");
         out_commands = [out_commands; tmp];
     end
 end
 
 %% REPOSITION
 
-function out_list= move_cubes(C_pos_list, E_pos_list, cube_clearance, open_state, closed_state, current_pose)
+function out_list= move_cubes(C_pos_list, E_pos_list, cube_clearance, open_state, closed_state, current_pose, task_type)
     % C_pos_list and E_pos_list have corresponding indexes
     % (i.e. C1 -> E1 will both be at index 1)
     % Each position must have values [x y z phi] in cm
     out_list = [];
     % change this to be closer to 0 if required
     hovering_angle = -75;
+    % To reset to old repositioning, set below to -90
+    translation_placedown_angle = -85;
+    if (task_type == "translation")
+        placedown_angle = translation_placedown_angle;
+    elseif (task_type == "stacking")
+        placedown_angle = -90;
+    end
     intermediate_point = 0.5;
 
     prev_additional_height_E = 0;
@@ -75,9 +82,14 @@ function out_list= move_cubes(C_pos_list, E_pos_list, cube_clearance, open_state
         % (with intermediate point for precision)
         out_list(end+1,:) = [E_pos(1),E_pos(2),working_height+additional_height_E,hovering_angle];
         out_list(end+1,:) = [E_pos(1),E_pos(2),E_pos(3)+additional_height_E+intermediate_point,-90];
-        out_list(end+1,:) = [E_pos(1),E_pos(2),E_pos(3)+additional_height_E,-90];
+        % Account for first cube placed in holder when stacking
+        if ((task_type == "stacking")&(i == 1))
+            out_list(end+1,:) = [E_pos(1),E_pos(2),E_pos(3)+additional_height_E,translation_placedown_angle];
+        else
+            out_list(end+1,:) = [E_pos(1),E_pos(2),E_pos(3)+additional_height_E,placedown_angle];
+        end
         out_list(end+1,:) = ["gripper", open_state, 0, 0];
-        current_pose = [E_pos(1),E_pos(2),E_pos(3)+additional_height_E,-90];
+        current_pose = [E_pos(1),E_pos(2),E_pos(3)+additional_height_E,placedown_angle];
         prev_additional_height_E = additional_height_E;
     end
 
