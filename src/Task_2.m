@@ -103,38 +103,44 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
     out_list = [];
     % change this to be closer to 0 if required
     hovering_angle = -75;
-    intermediate_point = 0.5;
-    phi_zero_offset_standard = 0;
-    phi_zero_offset = phi_zero_offset_standard;
-    next_phi_offset = 0;
+    intermediate_point = 0.7; % was 0.5
+    pickup_shift = 0.3;
     % All cubes should have same height when rotating
     working_height = C_pos_list{1}(3) + 2*cube_clearance;
     
     % Select one cube at a time
     for i = 1:numel(C_pos_list)
         C_pos = C_pos_list{i};
+        C_pos_pickup = C_pos;
         C_ori = C_ori_list{i};
         
         needs_rotation = true;
-        next_phi = -90+next_phi_offset;
+        next_phi = -85;
         rotations = 1;
-        additional_height = getAdditionalHeight(C_pos);
-
+        pickup_sign = 1;
+        putdown_offset = -5;
+        
         switch C_ori
             case 'up'
                 needs_rotation = false;
             case 'away'
-                next_phi = -90+next_phi_offset;
-                rotations = 1;
+                % no change from defaults
             case 'towards'
-                next_phi = 0+next_phi_offset;
+                next_phi = 0;
                 rotations = -1;
+                pickup_sign = -1;
+                putdown_offset = 10;
             case 'down'
-                next_phi = -90+next_phi_offset;
                 rotations = 2;
+                putdown_offset = putdown_offset;
             otherwise
                 needs_rotation = false;
         end
+        % Calculate offsetted pickup position for greater accuracy
+        cosine_position = C_pos(1)/sqrt(C_pos(1)^2+C_pos(2)^2);
+        sine_position = C_pos(2)/sqrt(C_pos(1)^2+C_pos(2)^2);
+        C_pos_pickup = [C_pos(1) + pickup_sign*pickup_shift*cosine_position, C_pos(2) + pickup_sign*pickup_shift*sine_position, C_pos(3)];
+        additional_height = getAdditionalHeight(C_pos_pickup);
 
         %If first cube, go to working height and open
         if (i==1)
@@ -145,36 +151,26 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
         % Rotate the cube
         if needs_rotation
             % Move to above cube
-            out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,-90];
-            if (next_phi ~= -90)
-                out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,next_phi];
-            end
+            out_list(end+1,:) = [C_pos_pickup(1),C_pos_pickup(2),working_height+additional_height,hovering_angle];
+            % if (next_phi ~= -90)
+            %     out_list(end+1,:) = [C_pos_pickup(1),C_pos_pickup(2),working_height+additional_height,next_phi];
+            % end
 
             for j = 1:abs(rotations)
                 % Move down, pick up cube, and return to working height
-                if (next_phi == 0)
-                    phi_zero_offset = phi_zero_offset_standard;
-                else
-                    phi_zero_offset = 0;
-                end
-                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height+intermediate_point+phi_zero_offset,next_phi];
-                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height+phi_zero_offset,next_phi];
+                out_list(end+1,:) = [C_pos_pickup(1),C_pos_pickup(2),C_pos_pickup(3)+additional_height+intermediate_point,next_phi];
+                out_list(end+1,:) = [C_pos_pickup(1),C_pos_pickup(2),C_pos_pickup(3)+additional_height,next_phi];
                 out_list(end+1,:) = ["gripper", closed_state, 0, 0];
-                out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,next_phi];
+                out_list(end+1,:) = [C_pos_pickup(1),C_pos_pickup(2),working_height+additional_height,next_phi];
                 % Rotate in-place
-                out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,(next_phi+(sign(rotations)*90))];
+                out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,(next_phi+(sign(rotations)*90)+putdown_offset)];
                 % Move down, place cube back 
-                if ((next_phi+(sign(rotations)*90)) == 0)
-                    phi_zero_offset = phi_zero_offset_standard;
-                else
-                    phi_zero_offset = 0;
-                end
                 % (intermediate point for precision)
-                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height+intermediate_point+phi_zero_offset,(next_phi+(sign(rotations)*90))];
-                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height+phi_zero_offset,(next_phi+(sign(rotations)*90))];
+                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height+intermediate_point,(next_phi+(sign(rotations)*90)+putdown_offset)];
+                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height,(next_phi+(sign(rotations)*90)+putdown_offset)];
                 out_list(end+1,:) = ["gripper", open_state, 0, 0];
                 % Return to working height
-                out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,(next_phi+(sign(rotations)*90))];
+                out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,(next_phi+(sign(rotations)*90)+putdown_offset)];
                 if (j < abs(rotations)) % reset angle
                     out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,next_phi];
                 end
