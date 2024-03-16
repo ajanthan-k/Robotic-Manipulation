@@ -14,9 +14,11 @@ function robot_pose = ...
         case 2
             a4 = 24; % pen
         case 3
-            a4 = 12; % task 4 (PLACEHOLDER)
+            a4 = 14.3; % task 4 handle 
         case 4
-            a4 = 20; % task 4 with spatula (PLACEHOLDER)
+            a4 = 17.3; % task 4 gripper
+        case 5
+            a4 = 22; % task 4 spatula end
         otherwise
             a4 = 14; % default value 
     end

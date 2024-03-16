@@ -41,7 +41,7 @@ PROTOCOL_VERSION            = 2.0;          % See which protocol version is used
 
 DXL_IDS                     = [11, 12, 13, 14, 15];
 BAUDRATE                    = 115200;
-DEVICENAME                  = 'COM7';       % Check which port is being used on your controller
+DEVICENAME                  = 'COM4';       % Check which port is being used on your controller
                                             % ex) Windows: 'COM1'   Linux: '/dev/ttyUSB0' Mac: '/dev/tty.usbserial-*'
                                             
 TORQUE_ENABLE               = 1;            % Value for enabling the torque
@@ -119,20 +119,18 @@ write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 1);
 
 %% ---------------HOME------------------- %%
 
-movePos(-6, 20, 13, -70, port_num, 2.0);
-
 %% Task 2
 % Pre-calculations
 cube_starts = {[8,3],[0,9],[-6,6]};
-cube_ends = {[4.9,4.95],[0,3.8],[-3.9,0]};
+cube_ends = {[4.9,4.95],[0,3.8],[-4,-0.2]}; 
 current_pose = [0,15,10,-90];
 
 % cube_orientations = {"away","down","towards"}; % all rotation possibilities
-cube_orientations = {"away","down","away"}; % video demo
-% cube_orientations = {"up","up","up"}; %for testing stacking w/o rotation
+% cube_orientations = {"away","down","away"}; % video demo
+cube_orientations = {"up","up","up"}; %for testing stacking w/o rotation
 
 % SELECT TASK HERE
-task_code = "2a";
+task_code = "2c";
 if (task_code == "2a")
     commands = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
 elseif (task_code == "2b")
@@ -143,8 +141,8 @@ end
 
 % Movement
 setVAProfile(1000,100,port_num); % set profile
-movePos(0, 15, 10, -90, port_num); % move to known pos
-openGripper(2, 0, port_num); % open gripper
+movePos([0, 15, 10, -90], port_num); % move to known pos
+openGripper(1, 1, port_num); % open gripper
 runCommands(commands, port_num); % do task
 
 %% Task 3
@@ -156,67 +154,48 @@ commands_3dropoff = Task_3("dropoff", placement, current_pose);
 
 % Movement
 runCommands(commands_3pickup, port_num);
+runCommands(commands_3dropoff, port_num);
 
-movePos(-6, 20, 2, -60, port_num, pause_time = 2.0, effector = 2);
-% moveStraightLine([-6, 20, 2, -60], [-6, 20, 2, -60], 1, port_num, pause_time = 1);
-% pause(1)
+%% 
+
+movePos([-6, 20, 2, -60], port_num, 2.0, 2);
 setVAProfile(200,100,port_num);
 
 %pen down
-movePos(-6, 20, 1, -60, port_num, pause_time = 2.0, effector = 2);
+movePos([-6, 20, 1, -60], port_num, 2.0, 2);
 
-moveStraightLine([-6, 20, 1, -60], [-14, 12.5, 0.8, -60], 40, port_num, pause_time = 0.15);
+moveStraightLine([-6, 20, 1, -60], [-14, 12.5, 0.8, -60], 40, port_num, 0.15);
 pause(1);
-moveStraightLine([-14, 12.5, 0.8, -60], [-14,20,1,-60], 40, port_num, pause_time = 0.15);
+moveStraightLine([-14, 12.5, 0.8, -60], [-14,20,1,-60], 40, port_num, 0.15);
 pause(1);
-moveStraightLine([-14,20,1,-60], [-6, 20, 1, -60], 40, port_num, pause_time = 0.15);
+moveStraightLine([-14,20,1,-60], [-6, 20, 1, -60], 40, port_num, 0.15);
 
 pause(1);
 
-moveArc(-10, 20, 0.7, -60, 4, 2*pi, pi, 60, port_num, pause_time = 0.15);
+moveArc(-10, 20, 0.7, -60, 4, 2*pi, pi, 60, port_num, 0.15);
 pause(2);
 
 setVAProfile(1000,100,port_num);
 
-movePos(-10, 16, 15, -60, port_num, pause_time = 1);
+movePos([-10, 16, 15, -60], port_num, 1);
 
 
 % In theory, better to update pos before it stops motion when trajectory
 % following?
 
-%% Task 4 recording
-
-% Detorque
-write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 0);
-
-% Recording parameters
-recording_length = 6; %seconds
-sampling_interval = 0.1; %seconds
-N_samples = recording_length/sampling_interval;
-% Record thetas
-theta_samples = zeros(N_samples,4);
-for i = 1:N_samples
-    theta_samples(i,:) = readPosAll;
-    pause(sampling_interval);
-end
-pause(3)
-% Retorque
-write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 1);
-% Record positions
-position_samples = zeros(size(theta_samples));
-for i = 1:N_samples
-    position_samples(i,:) = forwardKinematics(theta_samples(i,:), 3);
-end
-save("pancake_flip.mat", "position_samples");
-
 %% Task 4
 
-% commands_4 = Task_4();
-% runCommands(commands_4, port_num);
+task_4(port_num);
+
+%% Record egg crack
+
+write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 0);
+write4ByteTxRx(port_num, PROTOCOL_VERSION, 15, ADDR_PRO_TORQUE_ENABLE, 1);
+% recordMotion(6, 3, port_num)
 
 %% ---------------RESET------------------- %%
 setVAProfile(2000,200,port_num);
-% movePos(0, 15, 1, -90, port_num, 2.0);
+% movePos([0, 15, 1, -90], port_num, 2.0);
 
 % Disable Dynamixel Torque                                                                                                                                          
 write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 0);

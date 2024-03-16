@@ -36,8 +36,8 @@ function status = initDynamixels(port_num, PROTOCOL_VERSION)
     end
     
     % Set actuator limits
-    MAX_POS = [2400, 2200, 4000, 3200, 2600];
-    MIN_POS = [0, 50, 2000, 650, 1400];
+    MAX_POS = [2400, 2200, 4000, 3200, 2800];
+    MIN_POS = [0, 50, 2000, 650, 1000];
     for i = 1:5
         write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_MAX_POS, MAX_POS(i));
         write4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_MIN_POS, MIN_POS(i));
@@ -73,7 +73,7 @@ function status = initDynamixels(port_num, PROTOCOL_VERSION)
     % Check Homing Offset
     for i = 1:3
         offset = read4ByteTxRx(port_num, PROTOCOL_VERSION, DXL_IDS(i), ADDR_PRO_HOMING_0FFSET);
-        if offset ~= homing_offsets(i)
+        if typecast(uint32(offset), 'int32') ~= homing_offsets(i)
             fprintf('Homing offset not set correctly for Dynamixel %d\n', DXL_IDS(i));
             status = -1;
         end

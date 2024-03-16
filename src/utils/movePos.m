@@ -1,10 +1,7 @@
 % simple function to move to a given target position
-function movePos(x, y, z, phi, port_num, pause_time, effector)
+function movePos(pos, port_num, pause_time, effector)
     arguments
-        x double
-        y double
-        z double
-        phi double
+        pos (1,4) double
         port_num int32
         pause_time = 1.0
         effector int32 = 1
@@ -12,7 +9,11 @@ function movePos(x, y, z, phi, port_num, pause_time, effector)
     % could read current position => start_pos, target_pos = end_pos
     % and do some linear interpolation? but overcomplicated for current use
     
-    thetas = inverseKinematics(x, y, z, phi, effector);
+    thetas = inverseKinematics(pos(1), pos(2), pos(3), pos(4), effector);
+
+    if (thetas(1) < 0)
+        thetas(1) = thetas(1) + (2 * pi);
+    end
 
     writeTargetPos(11, thetas(1), port_num);
     writeTargetPos(12, thetas(2), port_num);

@@ -103,8 +103,8 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
     out_list = [];
     % change this to be closer to 0 if required
     hovering_angle = -75;
-    intermediate_point = 0.7; % was 0.5
-    pickup_shift = 0.3;
+    intermediate_point = 0.5; % was 0.5
+    pickup_shift = 0.2;
     % All cubes should have same height when rotating
     working_height = C_pos_list{1}(3) + 2*cube_clearance;
     

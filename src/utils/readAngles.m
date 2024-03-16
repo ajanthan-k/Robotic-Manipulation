@@ -1,7 +1,7 @@
-function thetas = readPosAll(port_num)
+function thetas = readAngles(port_num)
     
     
-    DXL_IDS = [11, 12, 13, 15, 15];
+    DXL_IDS = [11, 12, 13, 14, 15];
 
     enc1 = read2ByteTxRx(port_num, 2.0, DXL_IDS(1), 132);
     enc2 = read2ByteTxRx(port_num, 2.0, DXL_IDS(2), 132);
@@ -22,3 +22,8 @@ end
 function angle = encToDeg(enc)
     angle = (enc / 4096) * 360;
 end
+
+function radians = encToRad(angle)
+    radians = angle*pi/2048;
+end
+
