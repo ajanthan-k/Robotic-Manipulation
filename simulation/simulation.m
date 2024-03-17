@@ -141,14 +141,14 @@ for i = 1:6
 
     % X-axis Frames
     xFrame = armPos(1:3,i) + frameScale*positions{i}(1:3, 1);
-    plot3([armPos(1,i), xFrame(1)], [armPos(2,i), xFrame(2)], [armPos(3,i), xFrame(3)], 'r-', 'LineWidth', 2);
+    plot3([armPos(1,i), xFrame(1)], [armPos(2,i), xFrame(2)], [armPos(3,i), xFrame(3)], 'g-', 'LineWidth', 2);
 
     % Y-axis Frames
     yFrame = armPos(1:3,i) + frameScale*positions{i}(1:3, 2);
-    plot3([armPos(1,i), yFrame(1)], [armPos(2,i), yFrame(2)], [armPos(3,i), yFrame(3)], 'g-', 'LineWidth', 2);
+    plot3([armPos(1,i), yFrame(1)], [armPos(2,i), yFrame(2)], [armPos(3,i), yFrame(3)], 'b-', 'LineWidth', 2);
 
     % Z-axis Frames
     zFrame = armPos(1:3,i) + frameScale*positions{i}(1:3, 3);
-    plot3([armPos(1,i), zFrame(1)], [armPos(2,i), zFrame(2)], [armPos(3,i), zFrame(3)], 'b-', 'LineWidth', 2);
+    plot3([armPos(1,i), zFrame(1)], [armPos(2,i), zFrame(2)], [armPos(3,i), zFrame(3)], 'r-', 'LineWidth', 2);
 
 end
