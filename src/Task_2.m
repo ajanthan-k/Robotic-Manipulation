@@ -45,9 +45,9 @@ function out_list= move_cubes(C_pos_list, E_pos_list, cube_clearance, open_state
     % Each position must have values [x y z phi] in cm
     out_list = [];
     % change this to be closer to 0 if required
-    hovering_angle = -75;
+    hovering_angle = -85;
     % To reset to old repositioning, set below to -90
-    translation_placedown_angle = -85;
+    translation_placedown_angle = -90;
     if (task_type == "translation")
         placedown_angle = translation_placedown_angle;
     elseif (task_type == "stacking")
@@ -103,7 +103,7 @@ end
 function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_state, closed_state, current_pose)
     out_list = [];
     % change this to be closer to 0 if required
-    hovering_angle = -75;
+    hovering_angle = -80;
     intermediate_point = 0.5; % was 0.5
     pickup_shift = 0.2;
     % All cubes should have same height when rotating
@@ -116,10 +116,10 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
         C_ori = C_ori_list{i};
         
         needs_rotation = true;
-        next_phi = -85;
+        next_phi = -80;
         rotations = 1;
         pickup_sign = 1;
-        putdown_offset = -5;
+        putdown_offset = -10;
         
         switch C_ori
             case 'up'
@@ -140,6 +140,8 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
         cosine_position = C_pos(1)/sqrt(C_pos(1)^2+C_pos(2)^2);
         sine_position = C_pos(2)/sqrt(C_pos(1)^2+C_pos(2)^2);
         C_pos_pickup = [C_pos(1) + pickup_sign*pickup_shift*cosine_position, C_pos(2) + pickup_sign*pickup_shift*sine_position, C_pos(3)];
+%         C_pos_dropoff = [C_pos(1) - pickup_sign*pickup_shift*cosine_position, C_pos(2) - pickup_sign*pickup_shift*sine_position, C_pos(3)];
+        C_pos_dropoff = C_pos_pickup;
         additional_height = getAdditionalHeight(C_pos_pickup);
 
         %If first cube, go to working height and open
@@ -163,16 +165,16 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
                 out_list(end+1,:) = ["gripper", closed_state, 0, 0];
                 out_list(end+1,:) = [C_pos_pickup(1),C_pos_pickup(2),working_height+additional_height,next_phi];
                 % Rotate in-place
-                out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,(next_phi+(sign(rotations)*90)+putdown_offset)];
+                out_list(end+1,:) = [C_pos_dropoff(1),C_pos_dropoff(2),working_height+additional_height,(next_phi+(sign(rotations)*90)+putdown_offset)];
                 % Move down, place cube back 
                 % (intermediate point for precision)
-                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height+intermediate_point,(next_phi+(sign(rotations)*90)+putdown_offset)];
-                out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height,(next_phi+(sign(rotations)*90)+putdown_offset)];
+                out_list(end+1,:) = [C_pos_dropoff(1),C_pos_dropoff(2),C_pos_dropoff(3)+additional_height+intermediate_point,(next_phi+(sign(rotations)*90)+putdown_offset)];
+                out_list(end+1,:) = [C_pos_dropoff(1),C_pos_dropoff(2),C_pos_dropoff(3)+additional_height,(next_phi+(sign(rotations)*90)+putdown_offset)];
                 out_list(end+1,:) = ["gripper", open_state, 0, 0];
                 % Return to working height
-                out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,(next_phi+(sign(rotations)*90)+putdown_offset)];
+                out_list(end+1,:) = [C_pos_dropoff(1),C_pos_dropoff(2),working_height+additional_height,(next_phi+(sign(rotations)*90)+putdown_offset)];
                 if (j < abs(rotations)) % reset angle
-                    out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height,next_phi];
+                    out_list(end+1,:) = [C_pos_dropoff(1),C_pos_dropoff(2),working_height+additional_height,next_phi];
                 end
             end
             % Reset to hovering angle if required (for travelling)

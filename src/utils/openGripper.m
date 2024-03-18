@@ -6,7 +6,7 @@ switch state
     % cube open / close
     case 1
         if(open)
-            write4ByteTxRx(port_num, 2.0, 15, 116, 1400); % 1400
+            write4ByteTxRx(port_num, 2.0, 15, 116, 1800); % 1400
             pause(0.6);
         else 
             write4ByteTxRx(port_num, 2.0, 15, 116, 2300); %2300

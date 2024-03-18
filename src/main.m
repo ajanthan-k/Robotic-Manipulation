@@ -118,16 +118,18 @@ setVAProfile(2000,200,port_num);
 write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 1);
 
 %% ---------------HOME------------------- %%
+write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 0);
+disp(readPos(port_num, 3));
 
 %% Task 2
 % Pre-calculations
-cube_starts = {[8,3],[0,9],[-6,6]};
-cube_ends = {[4.9,4.95],[0,3.8],[-4,-0.2]}; 
+cube_starts = {[8,3],[0,9],[-6,5.8]};
+cube_ends = {[4.9,4.95],[0,3.8],[-4,0]}; 
 current_pose = [0,15,10,-90];
 
 % cube_orientations = {"away","down","towards"}; % all rotation possibilities
-% cube_orientations = {"away","down","away"}; % video demo
-cube_orientations = {"up","up","up"}; %for testing stacking w/o rotation
+cube_orientations = {"away","down","away"}; % video demo
+% cube_orientations = {"up","up","up"}; %for testing stacking w/o rotation
 
 % SELECT TASK HERE
 task_code = "2c";
@@ -140,7 +142,7 @@ else
 end
 
 % Movement
-setVAProfile(1000,100,port_num); % set profile
+setVAProfile(800,100,port_num); % set profile
 movePos([0, 15, 10, -90], port_num); % move to known pos
 openGripper(1, 1, port_num); % open gripper
 runCommands(commands, port_num); % do task
@@ -185,7 +187,7 @@ movePos([-10, 16, 15, -60], port_num, 1);
 
 %% Task 4
 
-task_4(port_num);
+Task_4(port_num);
 
 %% Record egg crack
 

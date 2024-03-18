@@ -12,7 +12,7 @@ function runCommands (command_list, port_num)
                 openGripper(1, 0, port_num);
             end
         else
-            movePos(command_list(i, 1:4), port_num, 1.0);
+            movePos(command_list(i, 1:4), port_num, 0.8);
         end
 
     end
