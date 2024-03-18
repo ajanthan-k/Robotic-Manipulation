@@ -16,10 +16,10 @@ removeT1 = true; % Set to false if you want to keep T1 label and frame
 thetaDisplay = true; % Set to false if you want to not display thetas
 
 % Theta Values (Modify these directly)
-theta1 = deg2rad(90);  
-theta2 = deg2rad(0);
-theta3 = deg2rad(-20);
-theta4 = deg2rad(0);
+theta1 = deg2rad(180);  
+theta2 = deg2rad(45);
+theta3 = deg2rad(-45);
+theta4 = deg2rad(-90);
 
 %% 
 
