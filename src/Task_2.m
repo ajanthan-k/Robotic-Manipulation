@@ -24,7 +24,8 @@ function out_commands = Task_2(task_ID, cube_starts, cube_ends, cube_orientation
         % 2c
         % rotation step
         cube_starts_reversed = flip(coords_to_cm(cube_starts, grid_multiplier, stand_height));
-        out_commands = rotate_cubes(cube_starts_reversed, cube_orientations, cube_clearance, open_state, closed_state, current_pose);
+        cube_orientations_reversed = flip(cube_orientations);
+        out_commands = rotate_cubes(cube_starts_reversed, cube_orientations_reversed, cube_clearance, open_state, closed_state, current_pose);
         current_pose = [cube_starts_reversed{end}(1),cube_starts_reversed{end}(2),0,-90]; % second two params don't matter
         % translation step; all translated to 1st item
         final_end = cube_ends{1};
@@ -129,10 +130,9 @@ function out_list = rotate_cubes(C_pos_list, C_ori_list, cube_clearance, open_st
                 next_phi = 0;
                 rotations = -1;
                 pickup_sign = -1;
-                putdown_offset = 10;
+                putdown_offset = -putdown_offset;
             case 'down'
                 rotations = 2;
-                putdown_offset = putdown_offset;
             otherwise
                 needs_rotation = false;
         end
