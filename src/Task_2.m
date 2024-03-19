@@ -45,7 +45,8 @@ function out_list= move_cubes(C_pos_list, E_pos_list, cube_clearance, open_state
     % Each position must have values [x y z phi] in cm
     out_list = [];
     % change this to be closer to 0 if required
-    hovering_angle = -85;
+    hovering_angle = -60;
+    standard_pickup_angle = -90;
     % To reset to old repositioning, set below to -90
     translation_placedown_angle = -90;
     if (task_type == "translation")
@@ -61,8 +62,18 @@ function out_list= move_cubes(C_pos_list, E_pos_list, cube_clearance, open_state
         E_pos = E_pos_list{i};
         
         working_height = E_pos(3)+cube_clearance;
+        
+        if ((sqrt(C_pos(1)^2 + C_pos(2)^2) > 20) | (sqrt(E_pos(1)^2 + E_pos(2)^2) > 23))
+            pickup_angle = -82;
+            translation_placedown_angle = pickup_angle;
+            placedown_angle = pickup_angle;
+        else
+            pickup_angle = standard_pickup_angle;
+            translation_placedown_angle = pickup_angle;
+            placedown_angle = pickup_angle;
+        end
 
-
+        
         additional_height_C = getAdditionalHeight(C_pos);
         additional_height_E = getAdditionalHeight(E_pos);
 
@@ -74,15 +85,15 @@ function out_list= move_cubes(C_pos_list, E_pos_list, cube_clearance, open_state
         out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height_C,hovering_angle];
         
         % Pick up cube
-        out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height_C+intermediate_point,-90];
-        out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height_C,-90];
+        out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height_C+intermediate_point,pickup_angle];
+        out_list(end+1,:) = [C_pos(1),C_pos(2),C_pos(3)+additional_height_C,pickup_angle];
         out_list(end+1,:) = ["gripper", closed_state, 0, 0];
         out_list(end+1,:) = [C_pos(1),C_pos(2),working_height+additional_height_C,hovering_angle];
 
         % Move to end position and place cube
         % (with intermediate point for precision)
         out_list(end+1,:) = [E_pos(1),E_pos(2),working_height+additional_height_E,hovering_angle];
-        out_list(end+1,:) = [E_pos(1),E_pos(2),E_pos(3)+additional_height_E+intermediate_point,-90];
+        out_list(end+1,:) = [E_pos(1),E_pos(2),E_pos(3)+additional_height_E+intermediate_point,placedown_angle];
         % Account for first cube placed in holder when stacking
         if ((task_type == "stacking")&(i == 1))
             out_list(end+1,:) = [E_pos(1),E_pos(2),E_pos(3)+additional_height_E,translation_placedown_angle];
