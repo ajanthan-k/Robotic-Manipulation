@@ -6,11 +6,12 @@ working_height = 17; % assuming box is tallest thing
 flip_motion = load('pancake_flip.mat').position_samples;
 egg_motion = load('egg_crack.mat').position_samples;
 
-setVAProfile(1000, 200, port_num);
+setVAProfile(2000, 200, port_num);
 
 %%
 
-movePos([0, 10, 10, -90], port_num, 1.0, 3);
+movePos([0, 10, 12, -90], port_num, 2.0, 3);
+setVAProfile(1000, 100, port_num);
 
 %% pick up box 
 openGripper(3, 1, port_num);
@@ -39,8 +40,8 @@ setVAProfile(2000, 200, port_num);
 movePos([14, 0, 24, -30], port_num, 1.0, 3);
 movePos([18, 0, 18, -30], port_num, 2.0, 3);
 setVAProfile(1000, 200, port_num);
-movePos([18, 0, 14, -70], port_num, 1.0, 3)
-movePos([18, 0, 9, -90], port_num, 1.0, 3)
+movePos([16, 0, 14, -70], port_num, 1.0, 3)
+movePos([17, 0, 9, -90], port_num, 1.0, 3)
 openGripper(3, 1, port_num);
 pause(1);
 movePos([16, 0, working_height, -70], port_num, 1.0, 3); % position above box ready to move on
@@ -112,9 +113,9 @@ movePos([-12, 12, 17, -30], port_num, 1.0, 3);
 
 movePos([-16, 16, 17, -60], port_num, 1.0, 3);
 movePos([-14.5, 16, 17, -45], port_num, 1.0, 3);
-setVAProfile(50,25,port_num);
+setVAProfile(30,10,port_num);
 % setVAProfile(100,500,port_num); %uncomment prev line once we're sure it's safe
-moveArc(-16, 16, 17, -45, 1.5, 2*pi, -4*pi, 180, port_num, 0.04, 3);
+moveArc(-16, 16, 17, -45, 1.5, 2*pi, -2*pi, 120, port_num, 0.02, 3);
 
 setVAProfile(1000,100,port_num);
 
@@ -164,8 +165,6 @@ movePos([0, 20, 14, -8], port_num, 1, 3);
 movePos([-0.2, 20.5, 3.5, -6], port_num, 1, 3);
 openGripper(3, 0, port_num); %now holding pan
 
-%%
-
 movePos([0, 20, 8, -8], port_num, 1, 3);
 movePos(flip_motion(1, 1:4), port_num, 1, 3);
 setVAProfile(100, 20, port_num);
@@ -174,24 +173,24 @@ for i = 1:length(flip_motion)
     movePos(flip_motion(i,1:4), port_num, 0.1, 3);
 end
 
-setVAProfile(1000, 200, port_num);
-movePos(flip_motion(1, 1:4), port_num, 1, 3);
-pause(0.5);
-setVAProfile(100, 20, port_num);
-
-for i = 1:length(flip_motion)
-    movePos(flip_motion(i,1:4), port_num, 0.1, 3);
-end
+% setVAProfile(1000, 200, port_num);
+% movePos(flip_motion(1, 1:4), port_num, 1, 3);
+% pause(0.5);
+% setVAProfile(100, 20, port_num);
+% 
+% for i = 1:length(flip_motion)
+%     movePos(flip_motion(i,1:4), port_num, 0.1, 3);
+% end
 
 setVAProfile(1000, 200, port_num);
 
 % Step 6: Serve - move off stove
-pause(2);
 movePos(flip_motion(1, 1:4), port_num, 1, 3);
 movePos([0, 30, 20, -0], port_num, 1, 3);
 movePos([0, 36, 20, -45], port_num, 1, 3);
 movePos([0, 30, 20, -30], port_num, 1, 3);
 pause(1)
+%%
 
 % Put pan down
 movePos(flip_motion(1, 1:4), port_num, 1, 3);

@@ -117,25 +117,24 @@ setVAProfile(2000,200,port_num);
 
 write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 1);
 
-%%
-movePos([0,15,10,-90], port_num, 2.0);
-
 %% ---------------HOME------------------- %%
-write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 0);
-disp(readPos(port_num, 3));
+
+movePos([0,10,10,-90], port_num, 2.0);
+% write4ByteTxRx(port_num, PROTOCOL_VERSION, 254, ADDR_PRO_TORQUE_ENABLE, 0);
+% disp(readPos(port_num, 3));
 
 %% Task 2
 % Pre-calculations
-cube_starts = {[8,3],[0,9.1],[-6,5.8]};
-cube_ends = {[4.9,4.95],[0,3.8],[-4,0]}; 
+cube_starts = {[-2,7],[7,7],[-7,0]};
+cube_ends = {[6,0],[3.9,3.9],[0,9]};
 current_pose = [0,15,10,-90];
 
-% cube_orientations = {"away","down","towards"}; % all rotation possibilities
-cube_orientations = {"up","away","up"}; % video demo
+cube_orientations = {"towards", "down", "away"}; % demo day 
+% cube_orientations = {"away","down","away"}; % video demo
 % cube_orientations = {"up","up","up"}; %for testing stacking w/o rotation
 
 % SELECT TASK HERE
-task_code = "2c";
+task_code = "2b";
 if (task_code == "2a")
     commands = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
 elseif (task_code == "2b")
@@ -145,47 +144,175 @@ else
 end
 
 % Movement
-setVAProfile(1000,400,port_num); % set profile
+setVAProfile(800,100,port_num); % set profile
+movePos([0, 15, 10, -90], port_num); % move to known pos
 openGripper(1, 1, port_num); % open gripper
 runCommands(commands, port_num); % do task
 
+%% demo
+% TASK 2A REAL
+setVAProfile(800,100,port_num); % set profile
+current_pose = [0,15,5,-90];
+cube_orientations = {"towards", "down", "away"}; % demo day 
+% Move cube 1 to (4,4) first for easier rotation)
+
+cube_starts = {[-2,7],[7,7],[-7,0]};
+cube_ends = {[6,0],[3.85,3.85],[0,9]};
+
+commands_2a = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
+runCommands(commands_2a, port_num);
+%% DON'T RUN THIS
+setVAProfile(800,100,port_num); % set profile
+current_pose = [0,15,5,-90];
+%% TASK 2B REAL
+% Rotate cube at [-2, 7] to up
+cube_starts = {[-2,7]};
+cube_ends = {[-2,7]};
+cube_orientations = {"down"};
+commands = Task_2("b", cube_starts, cube_ends, cube_orientations, current_pose);
+runCommands(commands, port_num);
+current_pose = commands(end,:);
+% Move to [-4, 4]
+cube_starts = {[-2,7]};
+cube_ends = {[3.9,3.9]};
+commands = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
+runCommands(commands, port_num);
+current_pose = commands(end,:);
+% Translate (7,7) to (-2,7)
+cube_starts = {[7,7]};
+cube_ends = {[-2,7]};
+commands = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
+runCommands(commands, port_num);
+current_pose = commands(end,:);
+% Rotate cubes at [0,9]
+cube_starts = {[-2,7]};
+cube_ends = {[-2,7]};
+cube_orientations = {"towards"};
+commands = Task_2("b", cube_starts, cube_ends, cube_orientations, current_pose);
+runCommands(commands, port_num);
+current_pose = commands(end,:);
+% Reverse the translation
+cube_starts = {[-2,7],[-7,0]};
+cube_ends = {[6.95,6.95],[-2,7]};
+cube_orientations = {"towards", "away"};
+commands = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
+runCommands(commands, port_num);
+current_pose = commands(end,:);
+% Rotate cubes at [-2,7]
+cube_starts = {[-2,7]};
+cube_ends = {[-2,7]};
+cube_orientations = {"away"};
+commands = Task_2("b", cube_starts, cube_ends, cube_orientations, current_pose);
+runCommands(commands, port_num);
+current_pose = commands(end,:);
+% Translate [-27 to -7,0]
+cube_starts = {[-2,7], [4,4]};
+cube_ends = {[-6.6,0], [-2,6.95]};
+cube_orientations = {"towards", "away"};
+commands = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
+runCommands(commands, port_num);
+current_pose = commands(end,:);
+%% TASK 2C REAL
+% Rotate cube at [-2, 7] to up
+cube_starts = {[-2,7]};
+cube_ends = {[-2,7]};
+cube_orientations = {"down"};
+commands = Task_2("b", cube_starts, cube_ends, cube_orientations, current_pose);
+runCommands(commands, port_num);
+current_pose = commands(end,:);
+% Move to [-4, 4]
+cube_starts = {[-2,7]};
+cube_ends = {[3.9,3.9]};
+commands = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
+runCommands(commands, port_num);
+current_pose = commands(end,:);
+% Translate (7,7) to (-2,7)
+cube_starts = {[7,7]};
+cube_ends = {[-2,7]};
+commands = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
+runCommands(commands, port_num);
+current_pose = commands(end,:);
+% Rotate cubes at [0,9]
+cube_starts = {[-2,7]};
+cube_ends = {[-2,7]};
+cube_orientations = {"towards"};
+commands = Task_2("b", cube_starts, cube_ends, cube_orientations, current_pose);
+runCommands(commands, port_num);
+current_pose = commands(end,:);
+% Reverse the translation
+cube_starts = {[-2,7],[-7,0]};
+cube_ends = {[6.95,6.95],[-2,7]};
+cube_orientations = {"towards", "away"};
+commands = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
+runCommands(commands, port_num);
+current_pose = commands(end,:);
+% Rotate cubes at [-2,7]
+cube_starts = {[-2,7]};
+cube_ends = {[-2,7]};
+cube_orientations = {"away"};
+commands = Task_2("b", cube_starts, cube_ends, cube_orientations, current_pose);
+runCommands(commands, port_num);
+current_pose = commands(end,:);
+% Translate [-27 to -7,0]
+cube_starts = {[-2,7], [4,4]};
+cube_ends = {[-6.6,0], [-2,6.95]};
+cube_orientations = {"towards", "away"};
+commands = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
+runCommands(commands, port_num);
+current_pose = commands(end,:);
+% Task c
+cube_starts = {[-7,0],[-2,7],[7,7]};
+cube_ends = {[3.95,3.95],[-2,7],[-7,0]};
+final_end = cube_ends{1};
+for i = 1:numel(cube_ends)
+    cube_ends{i} = [final_end(1), final_end(2), i-0.5];
+end
+commands = Task_2("a", cube_starts, cube_ends, cube_orientations, current_pose);
+runCommands(commands, port_num);
 %% Task 3
 % Calculations
 placement = [8,0];
+setVAProfile(1000,200,port_num); 
+current_pose = [0,10,10,-90];
 % current_pose = [0,15,10,-90];
 commands_3pickup = Task_3("pickup", placement, current_pose);
 commands_3dropoff = Task_3("dropoff", placement, current_pose);
 
 % Movement
 runCommands(commands_3pickup, port_num);
-runCommands(commands_3dropoff, port_num);
+% runCommands(commands_3dropoff, port_num);
 
 %% 
 
-movePos([-6, 20, 2, -60], port_num, 2.0, 2);
-setVAProfile(200,100,port_num);
+movePos([-17, 10, 2, -60], port_num, 2.0, 2);
+% setVAProfile(200,100,port_num);
+setVAProfile(100,50,port_num);
 
 %pen down
-movePos([-6, 20, 1, -60], port_num, 2.0, 2);
+movePos([-17, 10, 0.8, -60], port_num, 2.0, 2);
 
-moveStraightLine([-6, 20, 1, -60], [-14, 12.5, 0.8, -60], 40, port_num, 0.15);
+moveStraightLine([-17, 10, 0.8, -60], [-16.5, 20, 0.8, -60], 50, port_num, 0.08);
 pause(1);
-moveStraightLine([-14, 12.5, 0.8, -60], [-14,20,1,-60], 40, port_num, 0.15);
+moveStraightLine([-16.5, 20, 0.9, -60], [-12 ,15 ,0.4,-60], 50, port_num, 0.08);
 pause(1);
-moveStraightLine([-14,20,1,-60], [-6, 20, 1, -60], 40, port_num, 0.15);
+moveStraightLine([-12, 15 ,0.4,-60], [-16.8, 15, 0.9, -60], 50, port_num, 0.08);
 
 pause(1);
 
-moveArc(-10, 20, 0.7, -60, 4, 2*pi, pi, 60, port_num, 0.15);
+moveArc(-16.5, 17, 0., -60, 2.5, 3*pi/2, 6*pi/2, 60, port_num, 0.08);
 pause(2);
 
 setVAProfile(1000,100,port_num);
-
+movePos([-20, 17.5, 5, -60], port_num, 1.0, 2);
 movePos([-10, 16, 15, -60], port_num, 1);
 
 
 % In theory, better to update pos before it stops motion when trajectory
 % following?
+
+%%
+setVAProfile(1000,200,port_num); 
+runCommands(commands_3dropoff, port_num);
 
 %% Task 4
 
@@ -240,3 +367,4 @@ end
 function encoder = radToEnc(angle)
     encoder = (angle / (2*pi)) * 4096;
 end
+
